@@ -1,7 +1,7 @@
 (ns slacker.serialization
   (:use [slacker common])
   (:require [carbonite.api :as carb])
-  (:require [clj-json.core :as json])
+  (:require [slacker.serialization.fastjson :as json])
   (:import [java.nio ByteBuffer])
   (:import [java.nio.charset Charset]))
 
@@ -31,28 +31,24 @@
   [data]
   (let [jsonstr (.toString (.decode (Charset/forName "UTF-8") data))]
     (if *debug* (println (str "dbg:: " jsonstr)))
-    (json/parse-string jsonstr true)))
+    (json/parse-string jsonstr)))
 
 (defn write-json
   "Serialize clojure data structure to ByteBuffer with jackson"
   [data]
-  (let [jsonstr (json/generate-string data)]
+  (let [jsonstr (json/generate-string data true)]
     (if *debug* (println (str "dbg:: " jsonstr)))
     (.encode (Charset/forName "UTF-8") jsonstr)))
 
 (defn deserializer
-  "Find certain deserializer by content-type code:
-  * 0-carbonite,
-  * 1-json"
+  "Find certain deserializer by content-type code"
   [type]
   (case type
     :json read-json
     :carb read-carb))
 
 (defn serializer
-  "Find certain serializer by content-type code:
-  * 0-carbonite,
-  * 1-json"
+  "Find certain serializer by content-type code"
   [type]
   (case type
     :json write-json
